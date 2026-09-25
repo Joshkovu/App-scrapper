@@ -35,6 +35,23 @@ docker compose up --build
 
 The React app is at http://localhost:5173 and the Django API is at http://localhost:8000.
 
+## Cloudflare Pages
+
+In the Pages project settings use:
+
+- Root directory: `frontend`
+- Build command: `npm run build`
+- Build output directory: `dist`
+- Deploy command: leave it empty; Pages performs the deployment itself
+
+For a manual deployment from `frontend`, run:
+
+```powershell
+npm run deploy:pages
+```
+
+Do not use `wrangler deploy` for this project. That is the Workers command and expects a Worker entry point or an `[assets]` configuration. This project is a static Vite SPA and uses `wrangler pages deploy`.
+
 ## API
 
 - `POST /api/auth/signup/` with `{ "email", "password" }`
