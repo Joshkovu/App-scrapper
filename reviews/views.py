@@ -1,9 +1,11 @@
-from django.db.models import Count
+from django.db.models import Count, Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .exports import build_excel_export, build_pdf_export, export_filename
 from .models import Review, TrackedApp
 from .serializers import ReviewSerializer, TrackedAppSerializer
 from .services import scrape_and_persist
@@ -45,17 +47,53 @@ class AppListView(generics.ListAPIView):
         return TrackedApp.objects.filter(user=self.request.user).annotate(review_count=Count("reviews"))
 
 
+def _filtered_reviews(request, app):
+    queryset = Review.objects.filter(tracked_app=app)
+    sentiment = request.query_params.get("sentiment")
+    category = request.query_params.get("category")
+    search = request.query_params.get("search", "").strip()
+    if sentiment:
+        queryset = queryset.filter(sentiment=sentiment)
+    if category:
+        queryset = queryset.filter(category=category)
+    if search:
+        queryset = queryset.filter(
+            Q(content__icontains=search)
+            | Q(user_name__icontains=search)
+            | Q(extracted_issue__icontains=search)
+            | Q(category__icontains=search)
+        )
+    return queryset
+
+
 class ReviewListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ReviewSerializer
 
     def get_queryset(self):
         app = get_object_or_404(TrackedApp, id=self.kwargs["app_id"], user=self.request.user)
-        queryset = Review.objects.filter(tracked_app=app)
-        sentiment = self.request.query_params.get("sentiment")
-        category = self.request.query_params.get("category")
-        if sentiment:
-            queryset = queryset.filter(sentiment=sentiment)
-        if category:
-            queryset = queryset.filter(category=category)
-        return queryset
+        return _filtered_reviews(self.request, app)
+
+
+class ReviewExportView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, app_id):
+        app = get_object_or_404(TrackedApp, id=app_id, user=request.user)
+        export_format = request.query_params.get("format", "xlsx").lower()
+        if export_format not in {"xlsx", "pdf"}:
+            return Response({"detail": "format must be xlsx or pdf."}, status=status.HTTP_400_BAD_REQUEST)
+
+        reviews = list(_filtered_reviews(request, app))
+        if export_format == "pdf":
+            payload = build_pdf_export(app, reviews)
+            content_type = "application/pdf"
+            extension = "pdf"
+        else:
+            payload = build_excel_export(app, reviews)
+            content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            extension = "xlsx"
+
+        response = HttpResponse(payload, content_type=content_type)
+        response["Content-Disposition"] = f'attachment; filename="{export_filename(app, extension)}"'
+        return response
