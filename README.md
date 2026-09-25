@@ -32,7 +32,12 @@ Deploy the backend with the **Python 3** native runtime from `render.yaml`, not 
 1. In the Render dashboard, open **app-scrapper-api** → **Settings** → **Build & Deploy**.
 2. Set **Environment** to **Python 3** (not Docker). There is no `Dockerfile` at the repo root on purpose.
 3. **Sync** or apply the Blueprint so `buildCommand` and `startCommand` match `render.yaml`.
-4. Redeploy. Builds use Render’s Python pipeline instead of Docker BuildKit pushing to `image-registry-v2…internal.render.com`.
+4. Set **Start command** (Settings → **Build** or **Deploy**) to exactly:
+   ```bash
+   python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3
+   ```
+   If you see `ModuleNotFoundError: No module named 'app'`, Render is still using the Python default `gunicorn app:app`—replace it with the command above (or sync the Blueprint / use the repo `Procfile`).
+5. Redeploy. Builds use Render’s Python pipeline instead of Docker BuildKit pushing to `image-registry-v2…internal.render.com`.
 
 If a deploy log shows `#10 RUN pip install` / `exporting to image` / `failed to push image-registry-v2`, the service is still on Docker—switch to Python 3 and redeploy. Transient `connection refused` on the internal registry can also be cleared with **Clear build cache** and retry; contact Render support if it persists.
 

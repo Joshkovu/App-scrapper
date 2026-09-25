@@ -2,7 +2,7 @@
 # A root Dockerfile triggers Docker/BuildKit deploys and internal registry push failures.
 services:
   - type: web
-    name: app-scrapper-api
+    name: App-scrapper
     runtime: python
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
     startCommand: python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3
