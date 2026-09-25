@@ -1,0 +1,9 @@
+{
+  "name": "review-intelligence-dashboard",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": { "dev": "vite", "build": "vite build", "preview": "vite preview" },
+  "dependencies": { "@neon/config": "^1.7.3", "@neon/env": "^1.4.4", "@vitejs/plugin-react": "latest", "axios": "latest", "lucide-react": "latest", "react": "latest", "react-dom": "latest", "react-router-dom": "latest" },
+  "devDependencies": { "autoprefixer": "latest", "postcss": "latest", "tailwindcss": "^3.4.17", "vite": "latest" }
+}

@@ -1,36 +1,46 @@
-# Play Review Lens
+# Signal / App Review Intelligence
 
-A production-ready FastAPI dashboard that fetches live Google Play Store reviews with `google-play-scraper`, processes the result with pandas, and presents a searchable review workspace.
+Authenticated Django REST + React dashboard for live Google Play review analysis. Reviews are collected with `google-play-scraper`, ranked and filtered with pandas, analyzed in real batches by Gemini 2.5 Flash, and persisted in PostgreSQL.
 
-## Run locally
+## Local development
+
+Backend (SQLite fallback is used when `DATABASE_URL` is unset):
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-uvicorn main:app --reload
+python manage.py migrate
+$env:GEMINI_API_KEY = "your-google-ai-studio-key"
+python manage.py runserver 8000
 ```
 
-Open http://127.0.0.1:8000.
-
-## Docker
+Frontend in a second terminal:
 
 ```powershell
-docker build -t play-review-lens .
-docker run --rm -p 8000:8000 play-review-lens
+cd frontend
+npm install
+npm run dev
 ```
+
+Open http://localhost:5173. A Gemini API key is required for `/api/apps/scrape/`; the app deliberately fails clearly rather than returning mock analysis.
+
+## Docker Compose
+
+Set `GEMINI_API_KEY` in the shell, then run:
+
+```powershell
+docker compose up --build
+```
+
+The React app is at http://localhost:5173 and the Django API is at http://localhost:8000.
 
 ## API
 
-`POST /api/scrape` accepts a Play Store URL or package ID:
+- `POST /api/auth/signup/` with `{ "email", "password" }`
+- `POST /api/auth/login/` with `{ "email", "password" }`
+- `POST /api/apps/scrape/` with `{ "app_input", "count": 300, "lang": "en", "country": "us" }`
+- `GET /api/apps/`
+- `GET /api/apps/<uuid>/reviews/?sentiment=negative&category=Bugs/Performance`
 
-```json
-{
-  "app_input": "com.spotify.music",
-  "count": 300,
-  "lang": "en",
-  "country": "us"
-}
-```
-
-`count` is limited to 1-1000. The endpoint returns live app metadata, score distribution, response rate, and normalized review records. Invalid input returns `422`; upstream Play Store failures return `502`.
+All app endpoints require `Authorization: Bearer <access-token>`.
