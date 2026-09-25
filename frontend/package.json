@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "scripts": { "dev": "vite", "build": "vite build", "preview": "vite preview", "deploy:pages": "npm run build && wrangler pages deploy dist --project-name review-intelligence-dashboard" },
+  "scripts": { "dev": "vite", "build": "vite build", "preview": "vite preview", "deploy:pages": "npm run build && wrangler pages deploy dist --project-name app-scrapper" },
   "dependencies": { "@neon/config": "^1.7.3", "@neon/env": "^1.4.4", "@vitejs/plugin-react": "latest", "axios": "latest", "lucide-react": "latest", "react": "latest", "react-dom": "latest", "react-router-dom": "latest" },
   "devDependencies": { "@cloudflare/workers-types": "latest", "autoprefixer": "latest", "postcss": "latest", "tailwindcss": "^3.4.17", "vite": "latest", "wrangler": "^4.140.0" }
 }
