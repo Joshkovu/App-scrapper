@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Play Review Lens</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { ink: '#102a2e', cream: '#f4f0e8', coral: '#ef7158', mint: '#cce8da', line: '#d6dfd9' },
+          fontFamily: { display: ['Georgia', 'serif'], sans: ['ui-sans-serif', 'system-ui', 'sans-serif'] }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { background: #f4f0e8; color: #102a2e; }
+    .grain { background-image: radial-gradient(rgba(16,42,46,.08) .7px, transparent .7px); background-size: 8px 8px; }
+    .score-bar { transition: width .5s ease; }
+    .review-row { animation: rise .35s ease both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="min-h-screen font-sans grain">
+  <header class="border-b border-line/80 bg-cream/90">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8">
+      <div class="flex items-center gap-3">
+        <div class="grid h-10 w-10 place-items-center rounded-xl bg-ink text-xl text-cream">P</div>
+        <div>
+          <p class="text-sm font-bold uppercase tracking-[.22em] text-coral">Play Review Lens</p>
+          <p class="text-xs text-ink/60">Live store intelligence</p>
+        </div>
+      </div>
+      <a id="storeLink" class="hidden text-sm font-semibold underline decoration-coral decoration-2 underline-offset-4 hover:text-coral" target="_blank" rel="noreferrer">Open in Play Store</a>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-5 py-8 lg:px-8 lg:py-12">
+    <section class="mb-9 grid gap-8 lg:grid-cols-[1.1fr_.9fr] lg:items-end">
+      <div>
+        <p class="mb-3 text-xs font-bold uppercase tracking-[.24em] text-coral">Signal from the source</p>
+        <h1 class="max-w-3xl font-display text-5xl leading-[.98] tracking-tight sm:text-6xl">Read what players actually say.</h1>
+        <p class="mt-5 max-w-xl text-lg leading-8 text-ink/65">Pull the latest public reviews from any Google Play app and turn the noise into a clear, searchable pulse.</p>
+      </div>
+      <form id="scrapeForm" class="rounded-2xl border border-ink/10 bg-white/70 p-5 shadow-[0_14px_50px_rgba(16,42,46,.08)]">
+        <label for="appInput" class="mb-2 block text-sm font-bold">App URL or package ID</label>
+        <input id="appInput" name="app_input" required autocomplete="off" placeholder="com.spotify.music" class="w-full rounded-xl border border-line bg-cream px-4 py-3.5 outline-none transition focus:border-coral focus:ring-4 focus:ring-coral/10">
+        <div class="mt-4 grid gap-3 sm:grid-cols-3">
+          <label class="text-xs font-bold uppercase tracking-wider text-ink/55">Reviews
+            <input id="count" type="number" min="1" max="1000" value="300" class="mt-1.5 w-full rounded-lg border border-line bg-cream px-3 py-2 text-sm font-normal normal-case tracking-normal outline-none focus:border-coral">
+          </label>
+          <label class="text-xs font-bold uppercase tracking-wider text-ink/55">Language
+            <input id="lang" value="en" maxlength="8" class="mt-1.5 w-full rounded-lg border border-line bg-cream px-3 py-2 text-sm font-normal normal-case tracking-normal outline-none focus:border-coral">
+          </label>
+          <label class="text-xs font-bold uppercase tracking-wider text-ink/55">Country
+            <input id="country" value="us" maxlength="8" class="mt-1.5 w-full rounded-lg border border-line bg-cream px-3 py-2 text-sm font-normal uppercase tracking-normal outline-none focus:border-coral">
+          </label>
+        </div>
+        <button id="submitButton" class="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-ink px-4 py-3.5 font-bold text-cream transition hover:bg-coral disabled:cursor-wait disabled:opacity-60">
+          <span id="buttonLabel">Fetch live reviews</span><span aria-hidden="true">&rarr;</span>
+        </button>
+        <p id="error" class="mt-3 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"></p>
+      </form>
+    </section>
+
+    <section id="emptyState" class="rounded-2xl border border-dashed border-ink/20 bg-white/35 px-6 py-16 text-center">
+      <div class="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-mint text-2xl">&#8595;</div>
+      <h2 class="font-display text-3xl">Your first signal is one scrape away.</h2>
+      <p class="mx-auto mt-2 max-w-md text-ink/60">Enter a real Play Store URL or package ID above. Results are fetched live and are never seeded with sample data.</p>
+    </section>
+
+    <section id="results" class="hidden">
+      <div class="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div class="flex items-center gap-4">
+          <img id="appIcon" class="h-16 w-16 rounded-2xl border border-ink/10 bg-white object-cover shadow-sm" alt="">
+          <div><p id="appDeveloper" class="text-sm font-bold uppercase tracking-wider text-coral"></p><h2 id="appTitle" class="font-display text-4xl"></h2><p id="appMeta" class="mt-1 text-sm text-ink/55"></p></div>
+        </div>
+        <p id="queryMeta" class="text-sm text-ink/55"></p>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="rounded-2xl bg-ink p-5 text-cream"><p class="text-xs font-bold uppercase tracking-wider text-mint">Reviews found</p><p id="reviewCount" class="mt-4 text-4xl font-bold"></p></div>
+        <div class="rounded-2xl bg-white/70 p-5"><p class="text-xs font-bold uppercase tracking-wider text-ink/55">Average score</p><p id="averageScore" class="mt-4 text-4xl font-bold"></p></div>
+        <div class="rounded-2xl bg-white/70 p-5"><p class="text-xs font-bold uppercase tracking-wider text-ink/55">Response rate</p><p id="responseRate" class="mt-4 text-4xl font-bold"></p></div>
+        <div class="rounded-2xl bg-coral p-5 text-white"><p class="text-xs font-bold uppercase tracking-wider text-white/75">Store rating</p><p id="storeScore" class="mt-4 text-4xl font-bold"></p></div>
+      </div>
+      <div class="mt-6 grid gap-6 lg:grid-cols-[.7fr_1.3fr]">
+        <div class="rounded-2xl border border-line bg-white/60 p-6"><div class="mb-5 flex justify-between"><h3 class="font-bold">Score distribution</h3><span class="text-sm text-ink/45">out of 5</span></div><div id="distribution" class="space-y-3"></div></div>
+        <div class="rounded-2xl border border-line bg-white/60 p-6"><div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><h3 class="font-bold">Latest reviews</h3><input id="filter" placeholder="Filter review text" class="rounded-lg border border-line bg-cream px-3 py-2 text-sm outline-none focus:border-coral"></div><div id="reviewsList" class="divide-y divide-line"></div></div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const form = document.querySelector('#scrapeForm');
+    const button = document.querySelector('#submitButton');
+    const errorBox = document.querySelector('#error');
+    let reviews = [];
+    const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[char]));
+    const stars = score => `<span class="text-coral">${'★'.repeat(score)}${'☆'.repeat(5 - score)}</span>`;
+    function renderReviews() {
+      const term = document.querySelector('#filter').value.toLowerCase().trim();
+      const visible = reviews.filter(review => review.content.toLowerCase().includes(term));
+      document.querySelector('#reviewsList').innerHTML = visible.length ? visible.map((review, index) => `<article class="review-row py-5" style="animation-delay:${Math.min(index, 8) * 35}ms"><div class="flex flex-wrap items-center justify-between gap-2"><div class="flex items-center gap-3"><strong>${escapeHtml(review.user_name)}</strong><span class="text-xs text-ink/45">${review.published_at ? new Date(review.published_at).toLocaleDateString() : ''}</span></div><span class="text-sm">${stars(review.score)}</span></div><p class="mt-2 whitespace-pre-line text-sm leading-6 text-ink/75">${escapeHtml(review.content)}</p><div class="mt-2 flex gap-4 text-xs text-ink/45"><span>${review.thumbs_up_count} helpful</span>${review.version ? `<span>v${escapeHtml(review.version)}</span>` : ''}${review.reply_content ? '<span class="font-bold text-ink/60">Developer replied</span>' : ''}</div></article>`).join('') : '<p class="py-8 text-sm text-ink/55">No reviews match that filter.</p>';
+    }
+    document.querySelector('#filter').addEventListener('input', renderReviews);
+    form.addEventListener('submit', async event => {
+      event.preventDefault(); errorBox.classList.add('hidden'); button.disabled = true; document.querySelector('#buttonLabel').textContent = 'Fetching from Google Play...';
+      try {
+        const response = await fetch('/api/scrape', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({app_input: document.querySelector('#appInput').value, count: Number(document.querySelector('#count').value), lang: document.querySelector('#lang').value, country: document.querySelector('#country').value}) });
+        const payload = await response.json(); if (!response.ok) throw new Error(payload.detail || 'The scrape failed.');
+        reviews = payload.reviews; const {app, query, summary} = payload;
+        document.querySelector('#emptyState').classList.add('hidden'); document.querySelector('#results').classList.remove('hidden');
+        document.querySelector('#appIcon').src = app.icon; document.querySelector('#appIcon').alt = `${app.title} icon`; document.querySelector('#appTitle').textContent = app.title; document.querySelector('#appDeveloper').textContent = app.developer; document.querySelector('#appMeta').textContent = `${app.package_id} · ${app.ratings ? Number(app.ratings).toLocaleString() + ' store ratings' : 'store details available'}`; document.querySelector('#storeLink').href = app.url; document.querySelector('#storeLink').classList.remove('hidden'); document.querySelector('#queryMeta').textContent = `${query.language.toUpperCase()} / ${query.country.toUpperCase()} · newest first`; document.querySelector('#reviewCount').textContent = summary.review_count.toLocaleString(); document.querySelector('#averageScore').textContent = `${summary.average_score} / 5`; document.querySelector('#responseRate').textContent = `${summary.response_rate}%`; document.querySelector('#storeScore').textContent = app.score ? `${Number(app.score).toFixed(1)} / 5` : 'n/a';
+        document.querySelector('#distribution').innerHTML = [5,4,3,2,1].map(score => { const count = summary.score_distribution[String(score)]; const width = summary.review_count ? count / summary.review_count * 100 : 0; return `<div class="flex items-center gap-3 text-sm"><span class="w-3 font-bold">${score}</span><div class="h-2 flex-1 overflow-hidden rounded-full bg-line"><div class="score-bar h-full rounded-full bg-coral" style="width:${width}%"></div></div><span class="w-10 text-right text-ink/55">${count}</span></div>`; }).join(''); renderReviews(); window.scrollTo({top: document.querySelector('#results').offsetTop - 24, behavior: 'smooth'});
+      } catch (error) { errorBox.textContent = error.message; errorBox.classList.remove('hidden'); } finally { button.disabled = false; document.querySelector('#buttonLabel').textContent = 'Fetch live reviews'; }
+    });
+  </script>
+</body>
+</html>
