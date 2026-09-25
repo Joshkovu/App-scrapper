@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://app-scrapper.fly.dev'
+const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://app-scrapper-acy0.onrender.com'
 const api = axios.create({ baseURL: apiBaseUrl })
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access')

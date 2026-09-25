@@ -11,7 +11,13 @@ load_dotenv(BASE_DIR / ".env")
 file_env = dotenv_values(BASE_DIR / ".env.local")
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-this-secret")
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
-ALLOWED_HOSTS = [host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost,app-scrapper.fly.dev,app-scrapper-acy0.onrender.com").split(",") if host.strip()]
+configured_hosts = [host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",") if host.strip()]
+ALLOWED_HOSTS = list(dict.fromkeys(configured_hosts + [
+    "127.0.0.1",
+    "localhost",
+    "app-scrapper.fly.dev",
+    "app-scrapper-acy0.onrender.com",
+]))
 
 INSTALLED_APPS = [
     "django.contrib.admin",
