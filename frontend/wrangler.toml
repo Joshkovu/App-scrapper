@@ -6,4 +6,4 @@ directory = "./dist"
 not_found_handling = "single-page-application"
 
 [vars]
-VITE_API_URL = "https://app-scrapper.fly.dev"
+VITE_API_URL = "https://app-scrapper-v7fb.onrender.com"
