@@ -13,7 +13,9 @@ services:
       timeout: 5s
       retries: 10
   backend:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     environment:
       DJANGO_SECRET_KEY: change-me-in-production
       DJANGO_DEBUG: "false"

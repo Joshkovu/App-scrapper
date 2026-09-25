@@ -25,6 +25,19 @@ npm run dev
 
 Open http://localhost:5173. A Gemini API key is required for `/api/apps/scrape/`; the app deliberately fails clearly rather than returning mock analysis.
 
+## Render (API)
+
+Deploy the backend with the **Python 3** native runtime from `render.yaml`, not Docker.
+
+1. In the Render dashboard, open **app-scrapper-api** → **Settings** → **Build & Deploy**.
+2. Set **Environment** to **Python 3** (not Docker). There is no `Dockerfile` at the repo root on purpose.
+3. **Sync** or apply the Blueprint so `buildCommand` and `startCommand` match `render.yaml`.
+4. Redeploy. Builds use Render’s Python pipeline instead of Docker BuildKit pushing to `image-registry-v2…internal.render.com`.
+
+If a deploy log shows `#10 RUN pip install` / `exporting to image` / `failed to push image-registry-v2`, the service is still on Docker—switch to Python 3 and redeploy. Transient `connection refused` on the internal registry can also be cleared with **Clear build cache** and retry; contact Render support if it persists.
+
+Required env vars: `DJANGO_SECRET_KEY`, `DATABASE_URL`, `GEMINI_API_KEY` (see `render.yaml`).
+
 ## Docker Compose
 
 Set `GEMINI_API_KEY` in the shell, then run:

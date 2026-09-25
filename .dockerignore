@@ -2,3 +2,16 @@
 __pycache__
 *.pyc
 .git
+.env
+.env.local
+db.sqlite3
+staticfiles
+frontend
+.agents
+fly.toml
+render.yaml
+docker-compose.yml
+node_modules
+package-lock.json
+package.json
+skills-lock.json

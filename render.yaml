@@ -1,3 +1,5 @@
+# Native Python runtime only — do not set Environment to Docker on Render.
+# A root Dockerfile triggers Docker/BuildKit deploys and internal registry push failures.
 services:
   - type: web
     name: app-scrapper-api
@@ -7,6 +9,8 @@ services:
     plan: free
     healthCheckPath: /api/health/
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.11"
       - key: DJANGO_SECRET_KEY
         sync: false
       - key: DJANGO_DEBUG
