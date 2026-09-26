@@ -19,11 +19,11 @@ class ScrapeView(APIView):
         try:
             count = int(request.data.get("count", 300))
         except (TypeError, ValueError):
-            return Response({"detail": "count must be an integer between 1 and 300."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "count must be an integer between 1 and 1000."}, status=status.HTTP_400_BAD_REQUEST)
         if not app_input:
             return Response({"detail": "app_input is required."}, status=status.HTTP_400_BAD_REQUEST)
-        if count < 1 or count > 300:
-            return Response({"detail": "count must be between 1 and 300."}, status=status.HTTP_400_BAD_REQUEST)
+        if count < 1 or count > 1000:
+            return Response({"detail": "count must be between 1 and 1000."}, status=status.HTTP_400_BAD_REQUEST)
         try:
             tracked_app = scrape_and_persist(
                 user=request.user,

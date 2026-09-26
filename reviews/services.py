@@ -173,7 +173,7 @@ def _enrich_with_gemini(review_objects: list[Review]) -> None:
 def scrape_and_persist(*, user, app_input: str, lang: str = "en", country: str = "us", count: int = 300) -> TrackedApp:
     package_id = extract_package_id(app_input)
     metadata = fetch_app(package_id, lang=lang, country=country)
-    raw_reviews, _ = fetch_reviews(package_id, lang=lang, country=country, sort=Sort.MOST_RELEVANT, count=min(count, 300))
+    raw_reviews, _ = fetch_reviews(package_id, lang=lang, country=country, sort=Sort.MOST_RELEVANT, count=min(count, 1000))
     normalized_reviews = _normalize_reviews(raw_reviews[:count])
     tracked_app, saved_reviews = _persist_scraped_reviews(
         user=user,
